@@ -33,6 +33,7 @@ public class TestTransition {
     }
 
     public void performTransitionAction() {
+        if(this.isSuccess())
         action.run();
     }
 
@@ -54,5 +55,9 @@ public class TestTransition {
 
     public void startTimer(){
         startTime = Timer.getFPGATimestamp();
+    }
+
+    public void stop(){
+        
     }
 }

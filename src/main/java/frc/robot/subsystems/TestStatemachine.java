@@ -9,14 +9,15 @@ import java.util.Map;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ElevatorConstants;
+import frc.robot.constants.TestConstants;
 
 public class TestStatemachine extends SubsystemBase {
     //define the functions of the elevator
-    private TestTransition moveDown = new TestTransition(getCurrentState(), null, null, null, null, 0);
     
     // Define the states for the elevator
     protected enum TestState {
         INITIAL,
+        HOME,
         UP,
         DOWN
     }
@@ -27,7 +28,34 @@ public class TestStatemachine extends SubsystemBase {
 
     private final Map<TestState, List<TestTransition>> transitionMap = new HashMap<>();
 
-    protected ElevatorSubsystem elevator;
+    protected TestSubsystem subsystem;
+
+    private TestTransition moveDown = new TestTransition(
+        TestState.DOWN, 
+        subsystem::getDownRequest, 
+        () -> {subsystem.setPosition(TestConstants.DownPosition);}, 
+        () -> subsystem.isAtPosition(TestConstants.DownPosition), 
+        () -> false, 
+        30
+    );
+
+    private TestTransition moveUp = new TestTransition(
+        TestState.UP, 
+        subsystem::getUpRequest, 
+        () -> {subsystem.setPosition(TestConstants.UpPosition);}, 
+        () -> subsystem.isAtPosition(TestConstants.UpPosition), 
+        () -> false, 
+        30
+    );
+
+    private TestTransition moveHome = new TestTransition(
+        TestState.HOME, 
+        subsystem::getHomeRequest, 
+        () -> {subsystem.setPosition(TestConstants.HomePosition);}, 
+        () -> subsystem.isAtPosition(TestConstants.HomePosition), 
+        () -> false, 
+        30
+    );
 
     public TestStatemachine() {
         currentState = TestState.INITIAL;
@@ -71,19 +99,19 @@ public class TestStatemachine extends SubsystemBase {
     if(!isStateUpdating){
         switch (currentState) {
             case INITIAL:
-                elevator.setNeutral();
+                subsystem.setNeutral();
                 break;
             
             case UP:
-                elevator.setNeutral();
+                subsystem.setNeutral();
                 break;
 
             case DOWN:
-                elevator.setNeutral();
+                subsystem.setNeutral();
                 break;
 
             default:
-                elevator.setNeutral();
+                subsystem.setNeutral();
                 break;
             }
         }
