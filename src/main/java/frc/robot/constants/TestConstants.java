@@ -43,9 +43,9 @@ public class TestConstants{
     public static final double home_downTime = 3.0;
     public static final double home_downVoltage = -2.0;
 
-    public static final double HomePosition = 0.0;
-    public static final double DownPosition = 0.0;
-    public static final double UpPosition = 0.0;
+    public static final double HomePosition = 0;
+    public static final double DownPosition = -50;
+    public static final double UpPosition = 50;
     
     public static final double positionDeadBand = 0.1;
 }

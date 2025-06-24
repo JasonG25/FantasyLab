@@ -57,7 +57,4 @@ public class TestTransition {
         startTime = Timer.getFPGATimestamp();
     }
 
-    public void stop(){
-        
-    }
 }

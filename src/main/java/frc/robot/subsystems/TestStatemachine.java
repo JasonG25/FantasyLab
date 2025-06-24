@@ -15,7 +15,7 @@ public class TestStatemachine extends SubsystemBase {
     //define the functions of the elevator
     
     // Define the states for the elevator
-    protected enum TestState {
+    public enum TestState {
         INITIAL,
         HOME,
         UP,
