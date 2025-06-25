@@ -16,13 +16,14 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TestConstants;
 
 public class TestSubsystem extends SubsystemBase {
 
-  private final TalonFX test = new TalonFX(0, "rio");
+  private final TalonFX test = new TalonFX(51, "rio");
 
   private TalonFXConfiguration testConfigs = new TalonFXConfiguration();
 
@@ -104,6 +105,9 @@ public class TestSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("HomeRequest", homeRequest);
+    SmartDashboard.putBoolean("DownRequest", downRequest);
+    SmartDashboard.putBoolean("UpRequest", upRequest);
     // This method will be called once per scheduler run
   }
 

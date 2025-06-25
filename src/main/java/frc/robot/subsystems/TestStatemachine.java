@@ -30,40 +30,56 @@ public class TestStatemachine extends SubsystemBase {
 
     protected TestSubsystem subsystem;
 
-    private TestTransition moveDown = new TestTransition(
-        TestState.DOWN, 
-        subsystem::getDownRequest, 
-        () -> {subsystem.setPosition(TestConstants.DownPosition);}, 
-        () -> subsystem.isAtPosition(TestConstants.DownPosition), 
-        () -> false, 
-        30
-    );
+    private TestTransition moveDown;
 
-    private TestTransition moveUp = new TestTransition(
-        TestState.UP, 
-        subsystem::getUpRequest, 
-        () -> {subsystem.setPosition(TestConstants.UpPosition);}, 
-        () -> subsystem.isAtPosition(TestConstants.UpPosition), 
-        () -> false, 
-        30
-    );
+    private TestTransition moveUp;
 
-    private TestTransition moveHome = new TestTransition(
-        TestState.HOME, 
-        subsystem::getHomeRequest, 
-        () -> {subsystem.setPosition(TestConstants.HomePosition);}, 
-        () -> subsystem.isAtPosition(TestConstants.HomePosition), 
-        () -> false, 
-        30
-    );
+    private TestTransition moveHome;
 
-    public TestStatemachine() {
+    public TestStatemachine(TestSubsystem subsystem) {
+        this.subsystem = subsystem;
+
+        moveDown = new TestTransition(
+            TestState.DOWN, 
+            subsystem::getDownRequest, 
+            () -> {subsystem.setPosition(TestConstants.DownPosition);}, 
+            () -> subsystem.isAtPosition(TestConstants.DownPosition), 
+            () -> false, 
+            30
+        );
+
+        moveUp = new TestTransition(
+            TestState.UP, 
+            subsystem::getUpRequest, 
+            () -> {subsystem.setPosition(TestConstants.UpPosition);}, 
+            () -> subsystem.isAtPosition(TestConstants.UpPosition), 
+            () -> false, 
+            30
+        );
+
+        moveHome = new TestTransition(
+            TestState.HOME, 
+            subsystem::getHomeRequest, 
+            () -> {subsystem.setPosition(TestConstants.HomePosition);}, 
+            () -> subsystem.isAtPosition(TestConstants.HomePosition), 
+            () -> false, 
+            30
+        );
+
         currentState = TestState.INITIAL;
         for (TestState state : TestState.values()) {
             transitionMap.putIfAbsent(state, new ArrayList<>());
         }
-        //transitionMap.get(TestState.INITIAL).add();
-        //TODO: Implement commands in each stage
+        transitionMap.get(TestState.INITIAL).add(moveUp);
+        transitionMap.get(TestState.INITIAL).add(moveDown);
+        transitionMap.get(TestState.INITIAL).add(moveHome);
+        transitionMap.get(TestState.HOME).add(moveUp);
+        transitionMap.get(TestState.HOME).add(moveDown);
+        transitionMap.get(TestState.UP).add(moveDown);
+        transitionMap.get(TestState.UP).add(moveHome);
+        transitionMap.get(TestState.DOWN).add(moveUp);
+        transitionMap.get(TestState.DOWN).add(moveHome);
+
     }
 
     public TestState getCurrentState() {
@@ -117,51 +133,3 @@ public class TestStatemachine extends SubsystemBase {
         }
     }
 }
-
-/*
-class Transition05 extends ElevatorTransition {
-
-    private ElevatorSubsystem elevator;
-    private double startTime = -1.0;
-
-    public Transition05(ElevatorSubsystem elevator) {
-        super(ElevatorState.INITIAL);
-        this.elevator = elevator;
-        startTime = Timer.getFPGATimestamp();
-    }
-
-    @Override
-    public boolean isTriggered() {
-        return elevator.isHallSensorTriggered() && elevator.getHomeRequest();
-    }
-
-    @Override
-    public void startTimer() {
-        startTime = Timer.getFPGATimestamp();
-    }
-
-    @Override
-    public void performTransitionAction() {
-        elevator.setVoltage(ElevatorConstants.home_upVoltage);
-    }
-
-    @Override
-    public boolean isSuccess() {
-        return !elevator.isHallSensorTriggered();
-    }
-
-    @Override
-    public boolean isExpired() {
-        return (Timer.getFPGATimestamp() - startTime) > ElevatorConstants.home_upTime;
-    }
-
-    @Override
-    public ElevatorState getNextState() {
-        if (isSuccess()) {
-            return ElevatorState.HOME_DOWN;
-        } else {
-            return ElevatorState.INITIAL;
-        }
-    }
-}
-    */
