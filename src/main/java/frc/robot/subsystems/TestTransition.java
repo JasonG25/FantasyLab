@@ -1,9 +1,10 @@
 package frc.robot.subsystems;
 
-import frc.robot.subsystems.TestStatemachine.TestState;
+import frc.robot.subsystems.TestSubsystem.TestState;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TestTransition {
     private final TestState targetState;
@@ -29,12 +30,15 @@ public class TestTransition {
     }
 
     public boolean isTriggered() {
+        SmartDashboard.putBoolean(this.toString(), isTriggeredCondition.getAsBoolean());
         return isTriggeredCondition.getAsBoolean();
     }
 
     public void performTransitionAction() {
-        if(this.isSuccess())
-        action.run();
+        if(! this.isSuccess()){
+            SmartDashboard.putBoolean(this.toString()+"is running", true);
+            action.run();
+        }
     }
 
     public boolean isSuccess() {
@@ -57,4 +61,8 @@ public class TestTransition {
         startTime = Timer.getFPGATimestamp();
     }
 
+    @Override
+    public String toString(){
+        return "Transforming to" + targetState.toString();
+    }
 }

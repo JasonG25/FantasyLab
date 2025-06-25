@@ -4,6 +4,11 @@
 
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
@@ -23,7 +28,7 @@ import frc.robot.constants.TestConstants;
 
 public class TestSubsystem extends SubsystemBase {
 
-  private final TalonFX test = new TalonFX(51, "rio");
+  private final TalonFX test = new TalonFX(3, "rio");
 
   private TalonFXConfiguration testConfigs = new TalonFXConfiguration();
 
@@ -39,6 +44,23 @@ public class TestSubsystem extends SubsystemBase {
   private boolean homeRequest = false;
   private boolean upRequest = false;
   private boolean downRequest = false;
+
+  public enum TestState {
+        INITIAL,
+        HOME,
+        UP,
+        DOWN
+    }
+
+    private TestState currentState;
+
+    private boolean isStateUpdating = false;
+
+    private final Map<TestState, List<TestTransition>> transitionMap = new HashMap<>();
+
+    private TestTransition moveDown;
+    private TestTransition moveUp;
+    private TestTransition moveHome;
 
   public TestSubsystem() {
     // config neutralmode
@@ -74,8 +96,82 @@ public class TestSubsystem extends SubsystemBase {
     testConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = TestConstants.test_forwardSoftLimitEnable;
     testConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = TestConstants.test_forwardSoftLimitThreshold;
     testConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = TestConstants.test_reverseSoftLimitEnable;
-    testConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TestConstants.test_reverseSoftLimitThreshold;  
+    testConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TestConstants.test_reverseSoftLimitThreshold;
+    
+        moveDown = new TestTransition(
+            TestState.DOWN, 
+            this::getDownRequest, 
+            () -> {this.setPosition(TestConstants.DownPosition);}, 
+            () -> this.isAtPosition(TestConstants.DownPosition), 
+            () -> false, 
+            30
+        );
+
+        moveUp = new TestTransition(
+            TestState.UP, 
+            this::getUpRequest, 
+            () -> {this.setPosition(TestConstants.UpPosition);;}, 
+            () -> this.isAtPosition(TestConstants.UpPosition), 
+            () -> false, 
+            30
+        );
+
+        moveHome = new TestTransition(
+            TestState.HOME, 
+            this::getHomeRequest, 
+            () -> {this.setPosition(TestConstants.HomePosition);;}, 
+            () -> this.isAtPosition(TestConstants.HomePosition), 
+            () -> false, 
+            30
+        );
+
+        currentState = TestState.INITIAL;
+
+        for (TestState state : TestState.values()) {
+            transitionMap.putIfAbsent(state, new ArrayList<>());
+        }
+        transitionMap.get(TestState.INITIAL).add(moveUp);
+        transitionMap.get(TestState.INITIAL).add(moveDown);
+        transitionMap.get(TestState.INITIAL).add(moveHome);
+        transitionMap.get(TestState.HOME).add(moveUp);
+        transitionMap.get(TestState.HOME).add(moveDown);
+        transitionMap.get(TestState.UP).add(moveDown);
+        transitionMap.get(TestState.UP).add(moveHome);
+        transitionMap.get(TestState.DOWN).add(moveUp);
+        transitionMap.get(TestState.DOWN).add(moveHome);
+
+        test.getConfigurator().apply(testConfigs);
   }
+
+public TestState getCurrentState() {
+    return currentState;
+}
+
+public void setState(TestState newState) {
+    currentState = newState;
+}
+
+public void update() {
+    this.isStateUpdating = false;
+    List<TestTransition> transitions = transitionMap.getOrDefault(currentState, List.of());
+    for (TestTransition t : transitions) {
+      if (t.isTriggered()) {
+          
+          SmartDashboard.putString("Transition Triggered", t.toString());
+          this.isStateUpdating = true;
+          t.performTransitionAction();
+
+          if (t.isSuccess()) {
+              this.currentState = t.getNextState();
+          }
+          if (t.isExpired()) {
+              this.currentState = t.getNextState();
+          }
+      }
+    }
+    
+    SmartDashboard.putBoolean("StateUpdating", isStateUpdating);
+}
 
   /**
    * Example command factory method.
@@ -108,8 +204,38 @@ public class TestSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("HomeRequest", homeRequest);
     SmartDashboard.putBoolean("DownRequest", downRequest);
     SmartDashboard.putBoolean("UpRequest", upRequest);
+
+    SmartDashboard.putString("CurrentState", currentState.name());
+
+    SmartDashboard.putNumber("MotorVoltage", test.getSupplyVoltage().getValueAsDouble());
+    SmartDashboard.putNumber("MotorPosition", test.getPosition().getValueAsDouble());
+
+    
     // This method will be called once per scheduler run
+
+    update();
+
+    if(!isStateUpdating){
+        switch (currentState) {
+            case INITIAL:
+                this.setNeutral();
+                break;
+            
+            case UP:
+                this.setNeutral();
+                break;
+
+            case DOWN:
+                this.setNeutral();
+                break;
+
+            default:
+                this.setNeutral();
+                break;
+        }
+    }
   }
+  
 
   @Override
   public void simulationPeriodic() {

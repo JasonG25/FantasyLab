@@ -30,6 +30,9 @@ public class RobotContainer {
   private final CommandXboxController m_testController =
       new CommandXboxController(OperatorConstants.kTestControllerPort);
 
+  private final CommandXboxController m_elevatorController =
+      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
   private final ElevatorTestCommand1 m_elevatorTestCommand1 = new ElevatorTestCommand1(m_elevatorSubsystem);
   private final ElevatorTestCommand2 m_elevatorTestCommand2 = new ElevatorTestCommand2(m_elevatorSubsystem);
 
@@ -59,7 +62,6 @@ public class RobotContainer {
 
     // // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // // cancelling on release.
-    // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
     
     m_testController.povUp().whileTrue(testUp);
     m_testController.povDown().whileTrue(testDown);

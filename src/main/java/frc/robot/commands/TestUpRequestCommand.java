@@ -4,9 +4,10 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.TestStatemachine.TestState;
+import frc.robot.subsystems.TestSubsystem.TestState;
 import frc.robot.subsystems.TestSubsystem;
 import frc.robot.constants.TestConstants;
 
@@ -34,13 +35,15 @@ public class TestUpRequestCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_subsystem.setUpRequest(true);;
+    m_subsystem.setUpRequest(true);
+    SmartDashboard.putBoolean("Up Triggered", true);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_subsystem.setUpRequest(false);
+    SmartDashboard.putBoolean("Up Triggered", false);
   }
 
   // Returns true when the command should end.
